@@ -1,0 +1,19 @@
+name: Hourly Script Execution
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour on the hour
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Run Python script
+        run: python process_applications.py  
