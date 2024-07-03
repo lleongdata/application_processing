@@ -1,42 +1,30 @@
-name: Process Applications
+name: Hourly Application Processing
 
 on:
   schedule:
-    - cron: "0 * * * *"  # Runs every hour
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+    - cron: '0 * * * *'  # Runs every hour
 
 jobs:
   process_applications:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # Replace with your Python version
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'  # Use your specific version if needed
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pandas
-
-    - name: Run application processing script
-      run: python process_applications.py
-
-    - name: Upload successful applications
-      uses: actions/upload-artifact@v2
-      with:
-        name: successful_applications
-        path: applications_datasets/successful_applications.csv
-
-    - name: Upload unsuccessful applications
-      uses: actions/upload-artifact@v2
-      with:
-        name: unsuccessful_applications
-        path: applications_datasets/unsuccessful_applications.csv
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas
+      
+      - name: Create directories
+        run: |
+          mkdir -p successful
+          mkdir -p unsuccessful
+      
+      - name: Run Python script
+        run: python process_applications.py
