@@ -1,6 +1,10 @@
-name: Hourly Application Processing
+name: Application Processing
 
 on:
+  push:
+    branches:
+      - main  # Replace with your main branch name
+      - master  # Add any other branches you want to trigger the workflow on
   schedule:
     - cron: '0 * * * *'  # Runs every hour
 
@@ -10,7 +14,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -20,11 +24,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pandas
-      
-      - name: Create directories
+
+      - name: Navigate to repository root
+        run: cd application_processing
+
+      - name: Create directories (if not exist)
         run: |
           mkdir -p successful
           mkdir -p unsuccessful
-      
+
       - name: Run Python script
         run: python process_applications.py
