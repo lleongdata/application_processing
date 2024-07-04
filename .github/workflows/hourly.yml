@@ -24,6 +24,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pandas
+          pip install PyGithub  # Install PyGithub package
 
       - name: Run Python script
         run: python process_applications.py
