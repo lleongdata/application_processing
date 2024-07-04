@@ -142,7 +142,7 @@ def create_or_update_file(folder_name, file_name, file_content, commit_message):
         print(f"Folder '{folder_name}' already exists in repository '{repo_name}'.")
 
     # Create or update file
-    repo.create_file(folder_name + file_name, commit_message, file_content)
+    repo.create_file(folder_name + '/' + file_name, commit_message, file_content)
     print(f"Created file '{file_name}' in folder '{folder_name}' in repository '{repo_name}'.")
 
 
