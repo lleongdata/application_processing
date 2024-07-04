@@ -127,7 +127,6 @@ unsuccessful_filename = f'unsuccessful_{current_datetime}.csv'
 
 
 
-
 # List contents of the repository
 contents = repo.get_contents("")
 print(contents)
@@ -143,3 +142,14 @@ def create_or_update_file(folder_name, file_name, file_content, commit_message):
     # Create or update file
     repo.create_file(folder_name + '/' + file_name, commit_message, file_content)
     print(f"Created file '{file_name}' in folder '{folder_name}' in repository '{repo_name}'.")
+
+
+
+
+# Convert DataFrames to CSV format
+successful_csv = successful_apps.to_csv(index=False)
+unsuccessful_csv = unsuccessful_apps.to_csv(index=False)
+
+# Create or update files in respective folders
+create_or_update_file('successful', successful_filename, successful_csv, f'Updated {successful_filename}')
+create_or_update_file('unsuccessful', unsuccessful_filename, unsuccessful_csv, f'Updated {unsuccessful_filename}')
