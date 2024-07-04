@@ -4,16 +4,7 @@ import hashlib
 from datetime import datetime
 import re
 from glob import glob
-
-# Change working directory to the script's directory if __file__ is defined
-try:
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
-except NameError:
-    pass  # __file__ is not defined
-
-# Create directories if they don't exist
-os.makedirs('successful', exist_ok=True)
-os.makedirs('unsuccessful', exist_ok=True)
+from github import Github
 
 # Read all CSV files in the applications_datasets folder
 csv_files = glob('applications_datasets/*.csv')
@@ -59,6 +50,37 @@ def process_name(name):
     last_name = parts[1] if len(parts) > 1 else ''
     return first_name, last_name
 
+
+
+# GitHub credentials
+username = 'lleongdata'
+repo_name = 'application_processing'
+access_token = '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'
+
+# Initialize PyGitHub
+g = Github(access_token)
+
+# Get the user and repository
+user = g.get_user(username)
+repo = user.get_repo(repo_name)
+
+# List contents of the repository
+contents = repo.get_contents("")
+
+# Check if folders already exist
+folder_names = ['successful', 'unsuccessful']
+existing_folders = [content for content in contents if content.type == "dir" and content.name in folder_names]
+
+# Create folders if they don't exist
+for folder_name in folder_names:
+    if folder_name not in [folder.name for folder in existing_folders]:
+        repo.create_file(folder_name + '/.keep', 'Initial commit', '')
+        print(f"Created folder '{folder_name}' in repository '{repo_name}'.")
+    else:
+        print(f"Folder '{folder_name}' already exists in repository '{repo_name}'.")
+
+
+
 # Set the reference date
 reference_date = datetime(2022, 1, 1)
 
@@ -74,6 +96,9 @@ successful_apps = df[
 ]
 
 unsuccessful_apps = df.drop(successful_apps.index)
+
+
+
 
 # Process successful applications
 successful_apps = successful_apps.copy()
@@ -91,9 +116,30 @@ successful_apps = successful_apps[['first_name', 'last_name', 'email', 'date_of_
 current_datetime = datetime.now().strftime('%d%b%Y-%H%M')
 
 # Define output filenames
-successful_filename = f'successful/successful_{current_datetime}.csv'
-unsuccessful_filename = f'unsuccessful/unsuccessful_{current_datetime}.csv'
+successful_filename = f'successful_{current_datetime}.csv'
+unsuccessful_filename = f'unsuccessful_{current_datetime}.csv'
 
 # Save to CSV files
-successful_apps.to_csv(successful_filename, index=False)
-unsuccessful_apps.to_csv(unsuccessful_filename, index=False)
+# successful_apps.to_csv(successful_filename, index=False)
+# unsuccessful_apps.to_csv(unsuccessful_filename, index=False)
+
+
+
+
+
+
+# List contents of the repository
+contents = repo.get_contents("")
+print(contents)
+
+# Function to create or update file in repo
+def create_or_update_file(folder_name, file_name, file_content, commit_message):
+    # Check if folder exists
+    existing_folders = [content for content in contents if content.type == "dir" and content.name == folder_name]
+    if not existing_folders:
+        repo.create_file(folder_name + '/.keep', 'Initial commit', '')
+        print(f"Created folder '{folder_name}' in repository '{repo_name}'.")
+
+    # Create or update file
+    repo.create_file(folder_name + '/' + file_name, commit_message, file_content)
+    print(f"Created file '{file_name}' in folder '{folder_name}' in repository '{repo_name}'.")
