@@ -135,12 +135,14 @@ print(contents)
 def create_or_update_file(folder_name, file_name, file_content, commit_message):
     # Check if folder exists
     existing_folders = [content for content in contents if content.type == "dir" and content.name == folder_name]
-    if not existing_folders:
+    if not any(existing_folders):
         repo.create_file(folder_name + '/.keep', 'Initial commit', '')
         print(f"Created folder '{folder_name}' in repository '{repo_name}'.")
+    else:
+        print(f"Folder '{folder_name}' already exists in repository '{repo_name}'.")
 
     # Create or update file
-    repo.create_file(folder_name + '/' + file_name, commit_message, file_content)
+    repo.create_file(folder_name + file_name, commit_message, file_content)
     print(f"Created file '{file_name}' in folder '{folder_name}' in repository '{repo_name}'.")
 
 
