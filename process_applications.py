@@ -5,6 +5,12 @@ from datetime import datetime
 import re
 from glob import glob
 
+# Change working directory to the script's directory if __file__ is defined
+try:
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+except NameError:
+    pass  # __file__ is not defined
+
 # Create directories if they don't exist
 os.makedirs('successful', exist_ok=True)
 os.makedirs('unsuccessful', exist_ok=True)
