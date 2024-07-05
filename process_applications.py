@@ -6,20 +6,18 @@ import re
 from glob import glob
 from github import Github
 
-# Read all CSV files in the applications_datasets folder
+# Read all the CSV files in the applications_datasets folder
 csv_files = glob('applications_datasets/*.csv')
 dataframes = [pd.read_csv(file) for file in csv_files]
 df = pd.concat(dataframes, ignore_index=True)
 
-# Data validation 
-# Email check
-def is_valid_email(email):
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|net)$'
-    return re.match(pattern, email) is not None
-
+# Data validation
+# Application mobile number is 8 digits
 def is_valid_mobile(mobile_no):
     return len(str(mobile_no)) == 8
 
+
+# Applicant is over 18 years old as of 1 Jan 2022
 def parse_date(dob):
     # Check if dob is already a datetime object
     if isinstance(dob, datetime):
@@ -37,11 +35,18 @@ def parse_date(dob):
 def is_above_18(dob, reference_date):
     return (reference_date - parse_date(dob)).days // 365 >= 18
 
+# Applicant has a valid email (email ends with @emailprovider.com or @emailprovider.net)
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|net)$'
+    return re.match(pattern, email) is not None
+
+# Membership IDs for successful applications
 def generate_membership_id(last_name, dob):
     hash_object = hashlib.sha256(dob.encode())
     hash_digest = hash_object.hexdigest()
     return f"{last_name}_{hash_digest[:5]}"
 
+# Split name into first_name and last_name
 def process_name(name):
     # Remove Mr., Mrs., Dr., or Ms.
     name = re.sub(r'^(Mr\.|Mrs\.|Dr\.|Ms\.)\s+', '', name)
@@ -51,8 +56,8 @@ def process_name(name):
     last_name = parts[1] if len(parts) > 1 else ''
     return first_name, last_name
 
-
-
+# To consolidate these datasets and output the successful applications into a folder
+# Scheduling using github actions and workflow file is used
 # GitHub credentials
 username = 'lleongdata'
 repo_name = 'application_processing'
@@ -88,7 +93,11 @@ reference_date = datetime(2022, 1, 1)
 # Convert date_of_birth to datetime objects
 df['date_of_birth'] = df['date_of_birth'].apply(parse_date)
 
-# Determine successful and unsuccessful applications
+# Determine successful and unsuccessful applications by:
+# Remove any rows which do not have a name field 
+# Applicant has a valid email
+# Application mobile number is 8 digits
+# Applicant is over 18 years old as of 1 Jan 2022
 successful_apps = df[
     df['name'].notna() & 
     df['email'].apply(is_valid_email) & 
@@ -99,15 +108,19 @@ successful_apps = df[
 unsuccessful_apps = df.drop(successful_apps.index)
 
 
-
-
 # Format successful applications
-successful_apps = successful_apps.copy()
 
+successful_apps = successful_apps.copy()
+# Split name into first_name and last_name
 successful_apps['first_name'], successful_apps['last_name'] = zip(*successful_apps['name'].apply(process_name))
 
+# Format birthday field into YYYYMMDD
 successful_apps['date_of_birth'] = successful_apps['date_of_birth'].apply(parse_date).dt.strftime('%Y%m%d')
+
+# Applicant is over 18 years old as of 1 Jan 2022
 successful_apps['above_18'] = True
+
+# Membership IDs for successful applications
 successful_apps['membership_id'] = successful_apps.apply(
     lambda row: generate_membership_id(row['last_name'], row['date_of_birth']), axis=1
 )
@@ -125,10 +138,6 @@ unsuccessful_filename = f'unsuccessful_{current_datetime}.csv'
 # Save to CSV files
 # successful_apps.to_csv(successful_filename, index=False)
 # unsuccessful_apps.to_csv(unsuccessful_filename, index=False)
-
-
-
-
 
 # List contents of the repository
 contents = repo.get_contents("")
@@ -149,12 +158,10 @@ def create_or_update_file(folder_name, file_name, file_content, commit_message):
     print(f"Created file '{file_name}' in folder '{folder_name}' in repository '{repo_name}'.")
 
 
-
-
 # Convert DataFrames to CSV format
 successful_csv = successful_apps.to_csv(index=False)
 unsuccessful_csv = unsuccessful_apps.to_csv(index=False)
 
-# Create or update files in respective folders
+# Create files in their respective folders
 create_or_update_file('successful', successful_filename, successful_csv, f'Updated {successful_filename}')
 create_or_update_file('unsuccessful', unsuccessful_filename, unsuccessful_csv, f'Updated {unsuccessful_filename}')
