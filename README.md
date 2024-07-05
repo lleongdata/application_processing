@@ -1,4 +1,4 @@
-### Senior Data Engineer Tech Challenge Section1: Data Pipelines 
+### Senior Data Engineer Tech Challenge Section 1: Data Pipelines 
 * The main file is process_applications.py.  This file is located at the root directory of the repository.
 * This python file is activated by a yaml file (hourly.yml) that runs at hourly intervals. 
 
