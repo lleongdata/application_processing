@@ -11,7 +11,8 @@ csv_files = glob('applications_datasets/*.csv')
 dataframes = [pd.read_csv(file) for file in csv_files]
 df = pd.concat(dataframes, ignore_index=True)
 
-# Helper functions
+# Data validation 
+# Email check
 def is_valid_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|net)$'
     return re.match(pattern, email) is not None
@@ -100,9 +101,11 @@ unsuccessful_apps = df.drop(successful_apps.index)
 
 
 
-# Process successful applications
+# Format successful applications
 successful_apps = successful_apps.copy()
+
 successful_apps['first_name'], successful_apps['last_name'] = zip(*successful_apps['name'].apply(process_name))
+
 successful_apps['date_of_birth'] = successful_apps['date_of_birth'].apply(parse_date).dt.strftime('%Y%m%d')
 successful_apps['above_18'] = True
 successful_apps['membership_id'] = successful_apps.apply(
@@ -131,7 +134,7 @@ unsuccessful_filename = f'unsuccessful_{current_datetime}.csv'
 contents = repo.get_contents("")
 print(contents)
 
-# Function to create or update file in repo
+# Function to create the csv files in the repo
 def create_or_update_file(folder_name, file_name, file_content, commit_message):
     # Check if folder exists
     existing_folders = [content for content in contents if content.type == "dir" and content.name == folder_name]
