@@ -1,10 +1,6 @@
 name: Application Processing
 
 on:
-  push:
-    branches:
-      - main  # Replace with your main branch name
-      - master  # Add any other branches you want to trigger the workflow on
   schedule:
     - cron: '0 * * * *'  # Runs every hour
 
